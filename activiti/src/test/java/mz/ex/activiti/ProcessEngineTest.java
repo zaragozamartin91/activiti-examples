@@ -27,16 +27,20 @@ public class ProcessEngineTest {
 	static Deployment deployment;
 	static TaskService taskService;
 	static RuntimeService runtimeService;
+	static RepositoryService repositoryService;
 
 	@BeforeClass
 	public static void beforeAll() {
 		applicationContext = new AnnotationConfigApplicationContext(SpringConfig.class);
 		processEngine = applicationContext.getBean(ProcessEngine.class);
+
+		// Everything that is related to static data (such as process definitions) are accessed through the RepositoryService
+		repositoryService = processEngine.getRepositoryService();
+
 		taskService = processEngine.getTaskService();
 		runtimeService = processEngine.getRuntimeService();
 
-		// RepositoryService permite manejar las definiciones de procesos y deploys
-		RepositoryService repositoryService = processEngine.getRepositoryService();
+		// Deploying means that the engine will parse the BPMN 2.0 xml to something executable and a new database record will be added for each process definition included in the deployment
 		deployment = repositoryService.createDeployment().addClasspathResource("VacationRequest.bpmn20.xml").deploy();
 	}
 
@@ -55,16 +59,16 @@ public class ProcessEngineTest {
 	}
 
 	@Test
-	public void givenDeployedProcess_whenStartProcessInstance_thenRunning() {
+	public void testFullVacationRequestFlow() {
 		String employeeName = "John";
 
-		// deploy the process definition
 		Map<String, Object> processVariables = new HashMap<>();
 		processVariables.put("employeeName", employeeName);
 		processVariables.put("numberOfDays", 4);
 		processVariables.put("vacationMotivation", "I need a break!");
 
-		// El runtime service sirve para obtener informacion sobre las instancias de proceso
+		// After deploying the process definition to the Activiti engine, we can start new process instances from it.
+		// The process definition is the blueprint, while a process instance is a runtime execution of it.
 		ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("vacationRequest", processVariables);
 		long processInstancesCount = runtimeService.createProcessInstanceQuery().count();
 
@@ -126,7 +130,6 @@ public class ProcessEngineTest {
 
 	@AfterClass
 	public static void afterAll() {
-		RepositoryService repositoryService = processEngine.getRepositoryService();
 		repositoryService.deleteDeployment(deployment.getId(), true);
 	}
 }
