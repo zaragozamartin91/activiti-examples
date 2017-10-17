@@ -11,8 +11,8 @@
 				<activiti:formProperty id="vacationMotivation" name="Motivation" type="string" />
 			</extensionElements>
 		</startEvent>
-		
-		
+
+
 		<sequenceFlow id="flow1" sourceRef="request" targetRef="handleRequest" />
 
 
@@ -20,7 +20,7 @@
 			<documentation>
 				${employeeName} would like to take ${numberOfDays} day(s) of vacation (Motivation: ${vacationMotivation}).
 			</documentation>
-			
+
 			<extensionElements>
 				<activiti:formProperty id="vacationApproved" name="Do you approve this vacation" type="enum" required="true">
 					<activiti:value id="true" name="Approve" />
@@ -28,16 +28,18 @@
 				</activiti:formProperty>
 				<activiti:formProperty id="managerMotivation" name="Motivation" type="string" />
 			</extensionElements>
-			
-			<!-- Se establece el posible GROUP owner del task -->
+
+			<!-- Tasks can also be put in the so-called candidate task list of people. In that case, the potentialOwner construct must be used. The usage is similar to the humanPerformer construct. 
+				Do note that it is required to define for each element in the formal expression to specify if it is a user or a group. If no specifics are given whether the given text string is a user 
+				or group, the engine defaults to group. -->
 			<potentialOwner>
 				<resourceAssignmentExpression>
 					<formalExpression>management</formalExpression>
 				</resourceAssignmentExpression>
 			</potentialOwner>
 		</userTask>
-		
-		
+
+
 		<!-- Defino una bifurcacion. En exito vamos a sendApprovalMail -->
 		<sequenceFlow id="flow2" sourceRef="handleRequest" targetRef="requestApprovedDecision" />
 		<exclusiveGateway id="requestApprovedDecision" name="Request approved?" />
@@ -62,28 +64,30 @@
 				Your manager has disapproved your vacation request for ${numberOfDays} days.
 				Reason: ${managerMotivation}
 			</documentation>
-			
+
 			<extensionElements>
 				<activiti:formProperty id="numberOfDays" name="Number of days" value="${numberOfDays}" type="long" required="true" />
 				<activiti:formProperty id="startDate" name="First day of holiday (dd-MM-yyy)" value="${startDate}" datePattern="dd-MM-yyyy hh:mm" type="date" required="true" />
 				<activiti:formProperty id="vacationMotivation" name="Motivation" value="${vacationMotivation}" type="string" />
-				
+
 				<!-- En los enum types hay que definir los valores aceptables -->
 				<activiti:formProperty id="resendRequest" name="Resend vacation request to manager?" type="enum" required="true">
 					<activiti:value id="true" name="Yes" />
 					<activiti:value id="false" name="No" />
 				</activiti:formProperty>
 			</extensionElements>
-			
+
 			<!-- Se determina el ASIGNEE de la tarea al empleado que inicio el request de vacaciones -->
+			<!-- A user task can be directly assigned to a user. This is done by defining a humanPerformer sub element. Such a humanPerformer definition needs a resourceAssignmentExpression 
+				that actually defines the user. -->
 			<humanPerformer>
 				<resourceAssignmentExpression>
 					<formalExpression>${employeeName}</formalExpression>
 				</resourceAssignmentExpression>
 			</humanPerformer>
 		</userTask>
-		
-		
+
+
 		<sequenceFlow id="flow6" sourceRef="adjustVacationRequestTask" targetRef="resendRequestDecision" />
 		<exclusiveGateway id="resendRequestDecision" name="Resend request?" />
 		<sequenceFlow id="flow7" sourceRef="resendRequestDecision" targetRef="handleRequest">

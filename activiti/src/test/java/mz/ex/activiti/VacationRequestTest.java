@@ -21,7 +21,7 @@ import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-public class ProcessEngineTest {
+public class VacationRequestTest {
 	static ApplicationContext applicationContext;
 	static ProcessEngine processEngine;
 	static Deployment deployment;
