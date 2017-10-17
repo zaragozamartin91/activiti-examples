@@ -40,7 +40,8 @@ public class ParallelRequestTest {
 		taskService = processEngine.getTaskService();
 		runtimeService = processEngine.getRuntimeService();
 
-		// Deploying means that the engine will parse the BPMN 2.0 xml to something executable and a new database record will be added for each process definition included in the deployment
+		// Deploying means that the engine will parse the BPMN 2.0 xml to something executable and a new database record will be added for each process
+		// definition included in the deployment
 		deployment = repositoryService.createDeployment().addClasspathResource("ParallelRequest.bpmn20.xml").deploy();
 	}
 
@@ -52,7 +53,7 @@ public class ParallelRequestTest {
 	}
 
 	@Test
-	public void testFullVacationRequestFlow() {
+	public void testFullVacationRequestFlow() throws InterruptedException {
 		Map<String, Object> processVariables = new HashMap<>();
 
 		// After deploying the process definition to the Activiti engine, we can start new process instances from it.
@@ -64,24 +65,46 @@ public class ParallelRequestTest {
 
 		/* PROCESO INICIADO ------------------------------------------------------------------------------------------------------------------------- */
 
-		List<Task> cashierTasks = taskService.createTaskQuery().taskCandidateGroup("cashier").list();
-		Task receiveAmountTask = cashierTasks.get(0);
+		Runnable r1 = new Runnable() {
+			public void run() {
+				List<Task> cashierTasks = taskService.createTaskQuery().taskCandidateGroup("cashier").list();
+				Task receiveAmountTask = cashierTasks.get(0);
 
-		Map<String, Object> receiveAmountTaskVariables = new HashMap<>();
-		receiveAmountTaskVariables.put("amount", Double.valueOf(2500.25));
-		taskService.complete(receiveAmountTask.getId(), receiveAmountTaskVariables);
+				Map<String, Object> receiveAmountTaskVariables = new HashMap<>();
+				receiveAmountTaskVariables.put("amount", Double.valueOf(2500.25));
+				synchronized (taskService) {
+					taskService.complete(receiveAmountTask.getId(), receiveAmountTaskVariables);
+				}
+			}
+		};
+		Thread t1 = new Thread(r1);
+		t1.start();
 
 		/* PAGO RECIBIDO ------------------------------------------------------------------------------------------------------------------------- */
 
-		List<Task> inventoryTasks = taskService.createTaskQuery().taskCandidateGroup("inventory").list();
-		Task shipOrderTask = inventoryTasks.get(0);
+		Runnable r2 = new Runnable() {
+			public void run() {
+				List<Task> inventoryTasks = taskService.createTaskQuery().taskCandidateGroup("inventory").list();
+				Task shipOrderTask = inventoryTasks.get(0);
 
-		Map<String, Object> shipOrderTaskVariables = new HashMap<>();
-		shipOrderTaskVariables.put("orderId", "12345-ABC");
-		taskService.complete(shipOrderTask.getId(), shipOrderTaskVariables);
-		
+				Map<String, Object> shipOrderTaskVariables = new HashMap<>();
+				shipOrderTaskVariables.put("orderId", "12345-ABC");
+				synchronized (taskService) {
+					taskService.complete(shipOrderTask.getId(), shipOrderTaskVariables);
+				}
+			}
+		};
+		Thread t2 = new Thread(r2);
+		t2.start();
+
 		/* ORDEN ENVIADA ------------------------------------------------------------------------------------------------------------------------- */
-		
+
+		System.out.println("Esperando a finalizacion de tareas...");
+		t1.join();
+		t2.join();
+		System.out.println("Tareas finalizadas");
+		System.out.println("Archivando request...");
+
 		List<Task> managerTasks = taskService.createTaskQuery().taskCandidateGroup("manager").list();
 		Task archiveTask = managerTasks.get(0);
 
