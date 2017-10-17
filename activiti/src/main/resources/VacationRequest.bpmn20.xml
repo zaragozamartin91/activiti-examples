@@ -67,13 +67,15 @@
 				<activiti:formProperty id="numberOfDays" name="Number of days" value="${numberOfDays}" type="long" required="true" />
 				<activiti:formProperty id="startDate" name="First day of holiday (dd-MM-yyy)" value="${startDate}" datePattern="dd-MM-yyyy hh:mm" type="date" required="true" />
 				<activiti:formProperty id="vacationMotivation" name="Motivation" value="${vacationMotivation}" type="string" />
+				
+				<!-- En los enum types hay que definir los valores aceptables -->
 				<activiti:formProperty id="resendRequest" name="Resend vacation request to manager?" type="enum" required="true">
 					<activiti:value id="true" name="Yes" />
 					<activiti:value id="false" name="No" />
 				</activiti:formProperty>
 			</extensionElements>
 			
-			<!-- Se determina el ASIGNEE de la tarea -->
+			<!-- Se determina el ASIGNEE de la tarea al empleado que inicio el request de vacaciones -->
 			<humanPerformer>
 				<resourceAssignmentExpression>
 					<formalExpression>${employeeName}</formalExpression>

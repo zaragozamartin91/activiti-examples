@@ -25,11 +25,15 @@ public class ProcessEngineTest {
 	static ApplicationContext applicationContext;
 	static ProcessEngine processEngine;
 	static Deployment deployment;
+	static TaskService taskService;
+	static RuntimeService runtimeService;
 
 	@BeforeClass
 	public static void beforeAll() {
 		applicationContext = new AnnotationConfigApplicationContext(SpringConfig.class);
 		processEngine = applicationContext.getBean(ProcessEngine.class);
+		taskService = processEngine.getTaskService();
+		runtimeService = processEngine.getRuntimeService();
 
 		// RepositoryService permite manejar las definiciones de procesos y deploys
 		RepositoryService repositoryService = processEngine.getRepositoryService();
@@ -55,32 +59,69 @@ public class ProcessEngineTest {
 		String employeeName = "John";
 
 		// deploy the process definition
-		Map<String, Object> variables = new HashMap<>();
-		variables.put("employeeName", employeeName);
-		variables.put("numberOfDays", 4);
-		variables.put("vacationMotivation", "I need a break!");
+		Map<String, Object> processVariables = new HashMap<>();
+		processVariables.put("employeeName", employeeName);
+		processVariables.put("numberOfDays", 4);
+		processVariables.put("vacationMotivation", "I need a break!");
 
 		// El runtime service sirve para obtener informacion sobre las instancias de proceso
-		RuntimeService runtimeService = processEngine.getRuntimeService();
-		ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("vacationRequest", variables);
-		Long count = runtimeService.createProcessInstanceQuery().count();
+		ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("vacationRequest", processVariables);
+		long processInstancesCount = runtimeService.createProcessInstanceQuery().count();
 
-		assertEquals("1", count.toString());
+		assertEquals(1, processInstancesCount);
 
-		/* PROCESO INICIADO ------------------------------------------------------------------------------------------------ */
+		/* PROCESO INICIADO ------------------------------------------------------------------------------------------------------------------------- */
 
-		TaskService taskService = processEngine.getTaskService();
-		List<Task> tasks = taskService.createTaskQuery().taskCandidateGroup("management").list();
-		Task task = tasks.get(0);
+		List<Task> managementTasks = taskService.createTaskQuery().taskCandidateGroup("management").list();
+		Task approveRequestTask = managementTasks.get(0);
 
-		Map<String, Object> taskVariables = new HashMap<>();
-		taskVariables.put("vacationApproved", "false");
-		taskVariables.put("managerMotivation", "We have a tight deadline!");
-		taskService.complete(task.getId(), taskVariables);
+		System.out.println(approveRequestTask.getDescription());
 
-		Task currentTask = taskService.createTaskQuery().taskAssignee(employeeName).singleResult();
-		//Task currentTask = taskService.createTaskQuery().taskName("Adjust vacation request").singleResult();
-		assertNotNull(currentTask);
+		Map<String, Object> approveRequestTaskVariables = new HashMap<>();
+		approveRequestTaskVariables.put("vacationApproved", "false");
+		approveRequestTaskVariables.put("managerMotivation", "We have a tight deadline!");
+		taskService.complete(approveRequestTask.getId(), approveRequestTaskVariables);
+
+		/* REQUEST RECHAZADO ------------------------------------------------------------------------------------------------------------------------- */
+
+		Task resendRequestTask = taskService.createTaskQuery()
+				.taskAssignee(employeeName)
+				.taskName("Adjust vacation request")
+				.singleResult();
+		assertNotNull(resendRequestTask);
+
+		System.out.println(resendRequestTask.getDescription());
+		/*
+		 * <activiti:formProperty id="numberOfDays" name="Number of days" value="${numberOfDays}" type="long" required="true" /> <activiti:formProperty
+		 * id="startDate" name="First day of holiday (dd-MM-yyy)" value="${startDate}" datePattern="dd-MM-yyyy hh:mm" type="date" required="true" />
+		 * <activiti:formProperty id="vacationMotivation" name="Motivation" value="${vacationMotivation}" type="string" /> <activiti:formProperty
+		 * id="resendRequest" name="Resend vacation request to manager?" type="enum" required="true">
+		 * 
+		 */
+		Map<String, Object> resendRequestVariables = new HashMap<>();
+		resendRequestVariables.put("numberOfDays", 3);
+		resendRequestVariables.put("startDate", "21-03-1991 03:25");
+		resendRequestVariables.put("vacationMotivation", "I really need a break");
+		resendRequestVariables.put("resendRequest", "true");
+
+		taskService.complete(resendRequestTask.getId(), resendRequestVariables);
+
+		/* REQUEST REENVIADO ------------------------------------------------------------------------------------------------------------------------- */
+
+		managementTasks = taskService.createTaskQuery().taskCandidateGroup("management").list();
+		approveRequestTask = managementTasks.get(0);
+
+		System.out.println(approveRequestTask.getDescription());
+
+		approveRequestTaskVariables = new HashMap<>();
+		approveRequestTaskVariables.put("vacationApproved", "true");
+		approveRequestTaskVariables.put("managerMotivation", "mmm ok...");
+		taskService.complete(approveRequestTask.getId(), approveRequestTaskVariables);
+
+		/* REQUEST APROBADO -------------------------------------------------------------------------------------------------------------------------- */
+
+		processInstancesCount = runtimeService.createProcessInstanceQuery().count();
+		assertEquals(0, processInstancesCount);
 	}
 
 	@AfterClass

@@ -6,7 +6,8 @@ import org.activiti.engine.delegate.JavaDelegate;
 public class SendEmailServiceTask implements JavaDelegate {
 
 	public void execute(DelegateExecution execution) {
-		System.out.println("SENDING EMAIL!");
+		String employeeName = (String) execution.getVariable("employeeName");
+		System.out.println(String.format("Sending %s's email", employeeName));
 	}
 
 }
