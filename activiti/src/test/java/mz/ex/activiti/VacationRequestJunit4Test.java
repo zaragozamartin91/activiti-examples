@@ -23,6 +23,8 @@ import org.junit.Test;
  *
  */
 public class VacationRequestJunit4Test {
+	/* Este tipo de tests cuentan con que exista el archivo activiti.cfg.xml en el classpath */
+	
 	/* A traves de esta Rule es posible obtener los servicios de activiti */
 	@Rule
 	public ActivitiRule activitiRule = new ActivitiRule();

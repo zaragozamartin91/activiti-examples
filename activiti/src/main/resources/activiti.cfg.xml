@@ -10,7 +10,8 @@
 		<!-- <property name="jdbcUsername" value="root" /> -->
 		<!-- <property name="jdbcPassword" value="root" /> -->
 
-		<!-- Configuracion de una BBDD en memoria usando h2 -->
+		<!-- Configuracion de una BBDD en memoria usando h2. jdbc:h2:mem:activiti indica que se debe crear una bbdd en memoria, 
+		es decir no persistente. -->
 		<property name="jdbcUrl" value="jdbc:h2:mem:activiti;DB_CLOSE_DELAY=1000" />
 		<property name="jdbcDriver" value="org.h2.Driver" />
 		<property name="jdbcUsername" value="sa" />
