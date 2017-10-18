@@ -1,5 +1,6 @@
 package mz.ex.activiti;
 
+import mz.ex.activiti.check.Check;
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
@@ -52,6 +53,7 @@ public class EditCheckTest {
 		// Start a process instance
 		Map<String,Object> variables = new HashMap<>();
 		variables.put("checkId","macro-1234");
+		variables.put("entryCheck", new Check("RIO","65465464"));
 		runtimeService.startProcessInstanceByKey("editCheck",variables);
 
 		long processInstancesCount = runtimeService.createProcessInstanceQuery().count();

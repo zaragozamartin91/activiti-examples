@@ -22,5 +22,7 @@ public class EditRouteServiceTask implements JavaDelegate {
         check.setBranchOffice((String) branchOffice);
         check.setPostalCode((String) postalCode);
         check.setRouteDigit((Integer) routeDigit);
+
+        System.out.println( "Entry check" + execution.getVariable("entryCheck") );
     }
 }

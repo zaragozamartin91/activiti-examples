@@ -7,6 +7,7 @@
 		<startEvent id="theStart">
 			<extensionElements>
 				<activiti:formProperty id="checkId" name="Id de cheque" type="string" required="true" />
+				<activiti:formProperty id="entryCheck" name="Id de cheque" type="mz.ex.activiti.check.Check" required="true" />
 			</extensionElements>
 		</startEvent>
 
