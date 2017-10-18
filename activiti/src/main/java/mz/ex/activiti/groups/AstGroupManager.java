@@ -102,11 +102,17 @@ public class AstGroupManager implements GroupEntityManager {
 		switch (userId) {
 			case "foo":
 				return Arrays.asList(new Group[] {
-						new AstGroup("accountancy")
+						new AstGroup("accountancy"),
+						new AstGroup("route"),
 				});
 			case "bar":
 				return Arrays.asList(new Group[] {
-						new AstGroup("management")
+						new AstGroup("management"),
+						new AstGroup("account"),
+				});
+			case "zee":
+				return Arrays.asList(new Group[] {
+						new AstGroup("manager"),
 				});
 
 			default:

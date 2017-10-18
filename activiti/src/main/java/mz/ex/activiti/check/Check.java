@@ -1,9 +1,10 @@
-package mz.ex.activiti;
+package mz.ex.activiti.check;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
-public class Check {
+public class Check implements Serializable {
 	// RUTA DE COBRO ------------------------------------------------------------
 	private String bank;
 	private String branchOffice;
@@ -26,6 +27,28 @@ public class Check {
 
 	// CUIT ------------------------------------------------------------
 	private String cuit;
+
+	public Check() {
+	}
+
+	public Check(String bank, String check) {
+		this.bank = bank;
+		this.check = check;
+	}
+
+	public Check(String bank, String branchOffice, String postalCode, int routeDigit, String account, int accountDigit, String check, int checkDigit, BigDecimal amount, Date date, String cuit) {
+		this.bank = bank;
+		this.branchOffice = branchOffice;
+		this.postalCode = postalCode;
+		this.routeDigit = routeDigit;
+		this.account = account;
+		this.accountDigit = accountDigit;
+		this.check = check;
+		this.checkDigit = checkDigit;
+		this.amount = amount;
+		this.date = date;
+		this.cuit = cuit;
+	}
 
 	public String getBank() {
 		return bank;
@@ -113,5 +136,22 @@ public class Check {
 
 	public void setCuit(String cuit) {
 		this.cuit = cuit;
+	}
+
+	@Override
+	public String toString() {
+		return "Check{" +
+				"bank='" + bank + '\'' +
+				", branchOffice='" + branchOffice + '\'' +
+				", postalCode='" + postalCode + '\'' +
+				", routeDigit=" + routeDigit +
+				", account='" + account + '\'' +
+				", accountDigit=" + accountDigit +
+				", check='" + check + '\'' +
+				", checkDigit=" + checkDigit +
+				", amount=" + amount +
+				", date=" + date +
+				", cuit='" + cuit + '\'' +
+				'}';
 	}
 }
