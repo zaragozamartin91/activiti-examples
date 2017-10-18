@@ -28,4 +28,7 @@ RemoteSystemsTempFiles/
 .classpath
 .project
 .settings
+.idea/
+activiti.iml
+
 

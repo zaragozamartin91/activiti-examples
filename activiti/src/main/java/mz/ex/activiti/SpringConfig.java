@@ -1,6 +1,8 @@
 package mz.ex.activiti;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -11,9 +13,14 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.activiti.engine.ProcessEngine;
+import org.activiti.engine.impl.interceptor.SessionFactory;
+import org.activiti.engine.impl.persistence.entity.GroupEntityManager;
+import org.activiti.engine.impl.persistence.entity.UserEntityManager;
 import org.activiti.spring.ProcessEngineFactoryBean;
 import org.activiti.spring.SpringProcessEngineConfiguration;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -22,19 +29,13 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 @Configuration
+@ComponentScan
 public class SpringConfig {
 	// @Bean
 	// public ProcessEngine processEngine() {
 	// ProcessEngine processEngine = ProcessEngines.getDefaultProcessEngine();
 	// return processEngine;
 	// }
-
-	/*
-	 * <property name="jdbcUrl" value="jdbc:h2:mem:activiti;DB_CLOSE_DELAY=1000" /> <property name="jdbcDriver" value="org.h2.Driver" /> <property
-	 * name="jdbcUsername" value="sa" /> <property name="jdbcPassword" value="" />
-	 */
-
-	// xpath.compile("/beans/bean/property[@name='jdbcUrl']/@value").evaluate(doc,XPathConstants.STRING)
 
 	@Bean
 	public Document activitiCfgDoc() throws ParserConfigurationException, SAXException, IOException {
@@ -72,13 +73,22 @@ public class SpringConfig {
 	}
 
 	@Bean
-	public SpringProcessEngineConfiguration processEngineConfiguration(SimpleDriverDataSource dataSource, DataSourceTransactionManager transactionManager) {
+	public SpringProcessEngineConfiguration processEngineConfiguration(
+			SimpleDriverDataSource dataSource,
+			DataSourceTransactionManager transactionManager,
+			@Qualifier("astGroupManager") GroupEntityManager groupEntityManager, 
+			@Qualifier("astUserManager") UserEntityManager userEntityManager) {
+		
 		SpringProcessEngineConfiguration springProcessEngineConfiguration = new SpringProcessEngineConfiguration();
 
 		springProcessEngineConfiguration.setDataSource(dataSource);
 		springProcessEngineConfiguration.setTransactionManager(transactionManager);
 		springProcessEngineConfiguration.setDatabaseSchemaUpdate("true");
 		springProcessEngineConfiguration.setAsyncExecutorActivate(false);
+
+		/* Esta es la manera de establecer un manejador de grupos en activiti 6 con spring */
+		springProcessEngineConfiguration.setGroupEntityManager(groupEntityManager);
+		springProcessEngineConfiguration.setUserEntityManager(userEntityManager);
 
 		return springProcessEngineConfiguration;
 	}
