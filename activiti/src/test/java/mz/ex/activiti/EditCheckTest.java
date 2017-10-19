@@ -55,6 +55,7 @@ public class EditCheckTest {
 		Map<String,Object> variables = new HashMap<>();
 		variables.put("check", new Check("RIO","65465464"));
 		variables.put("mustEditRoute", false);
+		variables.put("mustEditAccount", true);
 		runtimeService.startProcessInstanceByKey("editCheck",variables);
 
 		long processInstancesCount = runtimeService.createProcessInstanceQuery().count();
@@ -74,6 +75,9 @@ public class EditCheckTest {
 
 		Task archiveCheckTask = taskService.createTaskQuery().taskCandidateUser("zee").singleResult();
 		System.out.println(archiveCheckTask.getDescription());
+
+		//Object check = runtimeService.getVariable("check");
+
 		taskService.complete(archiveCheckTask.getId());
 	}
 
@@ -86,6 +90,7 @@ public class EditCheckTest {
 		Map<String,Object> variables = new HashMap<>();
 		variables.put("check", new Check("RIO","65465464"));
 		variables.put("mustEditRoute", true);
+		variables.put("mustEditAccount", true);
 		runtimeService.startProcessInstanceByKey("editCheck",variables);
 
 		long processInstancesCount = runtimeService.createProcessInstanceQuery().count();
@@ -121,6 +126,72 @@ public class EditCheckTest {
 		editAccountVariables.put("accountDigit",2);
 
 		taskService.complete(editAccountTask.getId(),editAccountVariables);
+
+		Task archiveCheckTask = taskService.createTaskQuery().taskCandidateUser("zee").singleResult();
+		System.out.println(archiveCheckTask.getDescription());
+		taskService.complete(archiveCheckTask.getId());
+	}
+
+	@Test
+	public void testDoEditAccount() {
+		RuntimeService runtimeService = processEngine.getRuntimeService();
+		TaskService taskService = processEngine.getTaskService();
+
+		// Start a process instance
+		Map<String,Object> variables = new HashMap<>();
+		variables.put("check", new Check("RIO","65465464"));
+		variables.put("mustEditRoute", true);
+		variables.put("mustEditAccount", false);
+		runtimeService.startProcessInstanceByKey("editCheck",variables);
+
+		long processInstancesCount = runtimeService.createProcessInstanceQuery().count();
+		assertEquals(1, processInstancesCount);
+
+		/*
+		* 		<activiti:formProperty id="bank" name="Codigo de Banco" type="string" />
+				<activiti:formProperty id="branchOffice" name="Codigo de sucursal" type="string" />
+				<activiti:formProperty id="postalCode" name="Codigo postal" type="string" />
+				<activiti:formProperty id="routeDigit" name="Digito verificador de ruta de cobro" type="long" />
+		* */
+		Task editRouteTask = taskService.createTaskQuery().taskCandidateUser("foo").singleResult();
+		assertNotNull(editRouteTask);
+
+		Map<String,Object> editRouteVariables = new HashMap<>();
+		editRouteVariables.put("bank","macro");
+		editRouteVariables.put("branchOffice","cordoba");
+		editRouteVariables.put("postalCode","1640");
+		editRouteVariables.put("routeDigit",1);
+
+		taskService.complete(editRouteTask.getId(),editRouteVariables);
+
+		Task editAccountTask = taskService.createTaskQuery().taskCandidateUser("bar").singleResult();
+		Assert.assertNull(editAccountTask);
+
+		Task archiveCheckTask = taskService.createTaskQuery().taskCandidateUser("zee").singleResult();
+		System.out.println(archiveCheckTask.getDescription());
+		taskService.complete(archiveCheckTask.getId());
+	}
+
+	@Test
+	public void testEditNothing() {
+		RuntimeService runtimeService = processEngine.getRuntimeService();
+		TaskService taskService = processEngine.getTaskService();
+
+		// Start a process instance
+		Map<String,Object> variables = new HashMap<>();
+		variables.put("check", new Check("RIO","65465464"));
+		variables.put("mustEditRoute", false);
+		variables.put("mustEditAccount", false);
+		runtimeService.startProcessInstanceByKey("editCheck",variables);
+
+		long processInstancesCount = runtimeService.createProcessInstanceQuery().count();
+		assertEquals(1, processInstancesCount);
+
+		Task editRouteTask = taskService.createTaskQuery().taskCandidateUser("foo").singleResult();
+		Assert.assertNull(editRouteTask);
+
+		Task editAccountTask = taskService.createTaskQuery().taskCandidateUser("bar").singleResult();
+		Assert.assertNull(editAccountTask);
 
 		Task archiveCheckTask = taskService.createTaskQuery().taskCandidateUser("zee").singleResult();
 		System.out.println(archiveCheckTask.getDescription());

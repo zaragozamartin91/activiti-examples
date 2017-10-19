@@ -7,21 +7,23 @@
 		<startEvent id="theStart">
 			<extensionElements>
 				<activiti:formProperty id="check" name="Id de cheque" type="mz.ex.activiti.check.Check" required="true" />
-				<activiti:formProperty id="mustEditRoute" name="Switch de edicion de ruta" type="boolean" required="true"  />
+				<activiti:formProperty id="mustEditRoute" name="Switch de edicion de ruta" type="boolean" value="true"/>
+				<activiti:formProperty id="mustEditAccount" name="Switch de edicion de cuenta" type="boolean" value="true"  />
 			</extensionElements>
 		</startEvent>
 
 		<sequenceFlow id="flow1" sourceRef="theStart" targetRef="fork" />
 
-		<!-- SE ABREN LAS TAREAS *************************************************************************** -->
+		<!-- SE ABREN LAS TAREAS ************************************************************************************************* -->
+
+		<!-- Importante: cuando se usan parallelGateways, la cantidad de flows hacia el "join" debe ser IGUAL a la cantidad
+		 de ramas existentes. Para lograr esto se suelen usar tareas ficticias -->
+
 		<parallelGateway id="fork" />
 		<sequenceFlow sourceRef="fork" targetRef="shouldEditRoute" />
-		<sequenceFlow sourceRef="fork" targetRef="editAccount" />
+		<sequenceFlow sourceRef="fork" targetRef="shouldEditAccount" />
 
-		<!-- 	private String bank;
-		private String branchOffice;
-		private String postalCode;
-		private int routeDigit; -->
+		<!-- EDICION DE RUTA ***************************************************************************************************** -->
 
 		<exclusiveGateway id="shouldEditRoute" name="Editar ruta?" />
 		<sequenceFlow sourceRef="shouldEditRoute" targetRef="editRoute">
@@ -50,6 +52,16 @@
 		<serviceTask id="endEditRoute" activiti:class="mz.ex.activiti.check.DummyServiceTask" />
 		<sequenceFlow sourceRef="endEditRoute" targetRef="join" />
 
+		<!-- EDICION DE CUENTA ************************************************************************************************** -->
+
+		<exclusiveGateway id="shouldEditAccount" name="Editar cuenta?" />
+		<sequenceFlow sourceRef="shouldEditAccount" targetRef="editAccount">
+			<conditionExpression xsi:type="tFormalExpression">${mustEditAccount == true}</conditionExpression>
+		</sequenceFlow>
+		<sequenceFlow sourceRef="shouldEditAccount" targetRef="endEditAccount">
+			<conditionExpression xsi:type="tFormalExpression">${mustEditAccount == false}</conditionExpression>
+		</sequenceFlow>
+
 		<!-- 	private String account;
 		private int accountDigit; -->
 		<userTask id="editAccount" name="Editar numero de cuenta">
@@ -64,10 +76,13 @@
 				</resourceAssignmentExpression>
 			</potentialOwner>
 		</userTask>
-		<sequenceFlow sourceRef="editAccount" targetRef="join" />
+		<sequenceFlow sourceRef="editAccount" targetRef="endEditAccount" />
+
+		<serviceTask id="endEditAccount" activiti:class="mz.ex.activiti.check.DummyServiceTask" />
+		<sequenceFlow sourceRef="endEditAccount" targetRef="join" />
 
 
-		<!-- SE UNEN LAS TAREAS *************************************************************************** -->
+		<!-- SE UNEN LAS TAREAS *********************************************************************************************** -->
 		<parallelGateway id="join" />
 		<sequenceFlow sourceRef="join" targetRef="archiveCheckService" />
 
