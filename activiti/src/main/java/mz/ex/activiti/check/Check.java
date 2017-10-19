@@ -9,15 +9,15 @@ public class Check implements Serializable {
 	private String bank;
 	private String branchOffice;
 	private String postalCode;
-	private int routeDigit;
+	private Integer routeDigit;
 
 	// NUMERO DE CUENTA ------------------------------------------------------------
 	private String account;
-	private int accountDigit;
+	private Integer accountDigit;
 
 	// NUMERO DE CHEQUE ------------------------------------------------------------
 	private String check;
-	private int checkDigit;
+	private Integer checkDigit;
 
 	// IMPORTE ------------------------------------------------------------
 	private BigDecimal amount;
@@ -74,11 +74,11 @@ public class Check implements Serializable {
 		this.postalCode = postalCode;
 	}
 
-	public int getRouteDigit() {
+	public Integer getRouteDigit() {
 		return routeDigit;
 	}
 
-	public void setRouteDigit(int routeDigit) {
+	public void setRouteDigit(Integer routeDigit) {
 		this.routeDigit = routeDigit;
 	}
 
@@ -90,11 +90,11 @@ public class Check implements Serializable {
 		this.account = account;
 	}
 
-	public int getAccountDigit() {
+	public Integer getAccountDigit() {
 		return accountDigit;
 	}
 
-	public void setAccountDigit(int accountDigit) {
+	public void setAccountDigit(Integer accountDigit) {
 		this.accountDigit = accountDigit;
 	}
 
@@ -106,11 +106,11 @@ public class Check implements Serializable {
 		this.check = check;
 	}
 
-	public int getCheckDigit() {
+	public Integer getCheckDigit() {
 		return checkDigit;
 	}
 
-	public void setCheckDigit(int checkDigit) {
+	public void setCheckDigit(Integer checkDigit) {
 		this.checkDigit = checkDigit;
 	}
 

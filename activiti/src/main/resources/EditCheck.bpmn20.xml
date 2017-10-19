@@ -7,7 +7,7 @@
 		<startEvent id="theStart">
 			<extensionElements>
 				<activiti:formProperty id="check" name="Id de cheque" type="mz.ex.activiti.check.Check" required="true" />
-				<activiti:formProperty id="editRoute" name="Switch de edicion de ruta" type="boolean" value="true"  />
+				<activiti:formProperty id="mustEditRoute" name="Switch de edicion de ruta" type="boolean" required="true"  />
 			</extensionElements>
 		</startEvent>
 
@@ -15,13 +15,21 @@
 
 		<!-- SE ABREN LAS TAREAS *************************************************************************** -->
 		<parallelGateway id="fork" />
-		<sequenceFlow sourceRef="fork" targetRef="editRoute" />
+		<sequenceFlow sourceRef="fork" targetRef="shouldEditRoute" />
 		<sequenceFlow sourceRef="fork" targetRef="editAccount" />
 
 		<!-- 	private String bank;
 		private String branchOffice;
 		private String postalCode;
 		private int routeDigit; -->
+
+		<exclusiveGateway id="shouldEditRoute" name="Editar ruta?" />
+		<sequenceFlow sourceRef="shouldEditRoute" targetRef="editRoute">
+			<conditionExpression xsi:type="tFormalExpression">${mustEditRoute == true}</conditionExpression>
+		</sequenceFlow>
+		<sequenceFlow sourceRef="shouldEditRoute" targetRef="endEditRoute">
+			<conditionExpression xsi:type="tFormalExpression">${mustEditRoute == false}</conditionExpression>
+		</sequenceFlow>
 
 		<userTask id="editRoute" name="Editar ruta de cobro">
 			<extensionElements>
@@ -37,7 +45,10 @@
 				</resourceAssignmentExpression>
 			</potentialOwner>
 		</userTask>
-		<sequenceFlow sourceRef="editRoute" targetRef="join" />
+		<sequenceFlow sourceRef="editRoute" targetRef="endEditRoute" />
+
+		<serviceTask id="endEditRoute" activiti:class="mz.ex.activiti.check.DummyServiceTask" />
+		<sequenceFlow sourceRef="endEditRoute" targetRef="join" />
 
 		<!-- 	private String account;
 		private int accountDigit; -->
@@ -58,7 +69,11 @@
 
 		<!-- SE UNEN LAS TAREAS *************************************************************************** -->
 		<parallelGateway id="join" />
-		<sequenceFlow sourceRef="join" targetRef="archiveCheck" />
+		<sequenceFlow sourceRef="join" targetRef="archiveCheckService" />
+
+		<serviceTask id="archiveCheckService" name="Modificar campo cheque" activiti:class="mz.ex.activiti.check.ArchiveCheckServiceTask" />
+
+		<sequenceFlow sourceRef="archiveCheckService" targetRef="archiveCheck" />
 
 		<userTask id="archiveCheck" name="Archivar cheque">
 			<documentation>
@@ -71,10 +86,8 @@
 				</resourceAssignmentExpression>
 			</potentialOwner>
 		</userTask>
-		<sequenceFlow sourceRef="archiveCheck" targetRef="archiveCheckService" />
-		<serviceTask id="archiveCheckService" name="Archivar finalmente cheque" activiti:class="mz.ex.activiti.check.ArchiveCheckServiceTask" />
 
-		<sequenceFlow sourceRef="archiveCheckService" targetRef="theEnd" />
+		<sequenceFlow sourceRef="archiveCheck" targetRef="theEnd" />
 
 		<endEvent id="theEnd" />
 	</process>

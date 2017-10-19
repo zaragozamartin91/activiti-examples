@@ -26,6 +26,6 @@ public class ArchiveCheckServiceTask implements JavaDelegate {
 
         System.out.println(execution.getVariable("editRoute"));
 
-        System.out.println("Archivando cheque: " + check);
+        System.out.println("Cheque modificado: " + check);
     }
 }
