@@ -52,8 +52,8 @@ public class EditCheckTest {
 
 		// Start a process instance
 		Map<String,Object> variables = new HashMap<>();
-		variables.put("checkId","macro-1234");
-		variables.put("entryCheck", new Check("RIO","65465464"));
+		variables.put("check", new Check("RIO","65465464"));
+		variables.put("editRoute", false);
 		runtimeService.startProcessInstanceByKey("editCheck",variables);
 
 		long processInstancesCount = runtimeService.createProcessInstanceQuery().count();

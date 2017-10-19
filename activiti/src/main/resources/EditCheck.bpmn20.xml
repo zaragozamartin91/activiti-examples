@@ -6,14 +6,10 @@
 
 		<startEvent id="theStart">
 			<extensionElements>
-				<activiti:formProperty id="checkId" name="Id de cheque" type="string" required="true" />
-				<activiti:formProperty id="entryCheck" name="Id de cheque" type="mz.ex.activiti.check.Check" required="true" />
+				<activiti:formProperty id="check" name="Id de cheque" type="mz.ex.activiti.check.Check" required="true" />
+				<activiti:formProperty id="editRoute" name="Switch de edicion de ruta" type="boolean" value="true"  />
 			</extensionElements>
 		</startEvent>
-
-		<sequenceFlow id="flow0" sourceRef="theStart" targetRef="loadCheck" />
-
-		<serviceTask id="loadCheck" name="Cargar cheque" activiti:class="mz.ex.activiti.check.LoadCheckServiceTask" />
 
 		<sequenceFlow id="flow1" sourceRef="theStart" targetRef="fork" />
 
@@ -23,9 +19,9 @@
 		<sequenceFlow sourceRef="fork" targetRef="editAccount" />
 
 		<!-- 	private String bank;
-	private String branchOffice;
-	private String postalCode;
-	private int routeDigit; -->
+		private String branchOffice;
+		private String postalCode;
+		private int routeDigit; -->
 
 		<userTask id="editRoute" name="Editar ruta de cobro">
 			<extensionElements>
@@ -41,15 +37,10 @@
 				</resourceAssignmentExpression>
 			</potentialOwner>
 		</userTask>
-
-		<sequenceFlow sourceRef="editRoute" targetRef="editRouteService" />
-		<serviceTask id="editRouteService" name="Modificar ruta de cheque" activiti:class="mz.ex.activiti.check.EditRouteServiceTask" />
-
-		<sequenceFlow sourceRef="editRouteService" targetRef="join" />
-
+		<sequenceFlow sourceRef="editRoute" targetRef="join" />
 
 		<!-- 	private String account;
-	private int accountDigit; -->
+		private int accountDigit; -->
 		<userTask id="editAccount" name="Editar numero de cuenta">
 			<extensionElements>
 				<activiti:formProperty id="account" name="Numero de cuenta" type="string" />
@@ -62,11 +53,7 @@
 				</resourceAssignmentExpression>
 			</potentialOwner>
 		</userTask>
-
-		<sequenceFlow sourceRef="editAccount" targetRef="editAccountService" />
-		<serviceTask id="editAccountService" name="Modificar cuenta de cheque" activiti:class="mz.ex.activiti.check.EditAccountServiceTask" />
-
-		<sequenceFlow sourceRef="editAccountService" targetRef="join" />
+		<sequenceFlow sourceRef="editAccount" targetRef="join" />
 
 
 		<!-- SE UNEN LAS TAREAS *************************************************************************** -->
@@ -75,7 +62,7 @@
 
 		<userTask id="archiveCheck" name="Archivar cheque">
 			<documentation>
-				Archivando cheque ${checkId}.
+				Archivando cheque ${check}.
 			</documentation>
 
 			<potentialOwner>
