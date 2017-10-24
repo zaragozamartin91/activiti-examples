@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<definitions id="definitions" targetNamespace="http://activiti.org/bpmn20" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:activiti="http://activiti.org/bpmn">
+
+	<process id="parallelRequest" name="Parallel Request">
+
+		<startEvent id="theStart">
+			<extensionElements>
+				<activiti:formProperty id="amount" name="Amount" type="double" value="0" />
+				<activiti:formProperty id="orderId" name="Order Id" type="string" value="UNKNOWN" />
+			</extensionElements>
+		</startEvent>
+		<sequenceFlow id="flow1" sourceRef="theStart" targetRef="fork" />
+
+		<!-- SE ABREN LAS TAREAS *************************************************************************** -->
+		<parallelGateway id="fork" />
+		<sequenceFlow sourceRef="fork" targetRef="receivePayment" />
+		<sequenceFlow sourceRef="fork" targetRef="shipOrder" />
+
+		<userTask id="receivePayment" name="Receive Payment">
+			<extensionElements>
+				<activiti:formProperty id="amount" name="Amount" type="double" />
+			</extensionElements>
+
+			<potentialOwner>
+				<resourceAssignmentExpression>
+					<formalExpression>cashier</formalExpression>
+				</resourceAssignmentExpression>
+			</potentialOwner>
+		</userTask>
+		<sequenceFlow sourceRef="receivePayment" targetRef="join" />
+
+
+		<userTask id="shipOrder" name="Ship Order">
+			<extensionElements>
+				<activiti:formProperty id="orderId" name="Order Id" type="string" />
+			</extensionElements>
+
+			<potentialOwner>
+				<resourceAssignmentExpression>
+					<formalExpression>inventory</formalExpression>
+				</resourceAssignmentExpression>
+			</potentialOwner>
+		</userTask>
+		<sequenceFlow sourceRef="shipOrder" targetRef="join" />
+
+
+		<!-- SE UNEN LAS TAREAS *************************************************************************** -->
+		<parallelGateway id="join" />
+		<sequenceFlow sourceRef="join" targetRef="archiveOrder" />
+
+		<userTask id="archiveOrder" name="Archive Order">
+			<documentation>
+				Archiving order ${orderId} for amount ${amount}.
+			</documentation>
+
+			<potentialOwner>
+				<resourceAssignmentExpression>
+					<formalExpression>manager</formalExpression>
+				</resourceAssignmentExpression>
+			</potentialOwner>
+		</userTask>
+		<sequenceFlow sourceRef="archiveOrder" targetRef="theEnd" />
+
+		<endEvent id="theEnd" />
+
+	</process>
+
+</definitions>
